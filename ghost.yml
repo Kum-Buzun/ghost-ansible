@@ -1,5 +1,5 @@
 ---
-- hosts: ghost
+- hosts: poop
   tasks:
 
     - name: Download ghost
