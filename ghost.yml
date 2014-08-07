@@ -1,0 +1,51 @@
+---
+- hosts: ghost
+  tasks:
+
+    - name: Download ghost
+      shell: curl -L https://ghost.org/zip/ghost-latest.zip -o ghost.zip chdir=/home/ghost
+
+    - name: Unzip ghost
+      unarchive: src=/home/ghost/ghost.zip dest=/home/ghost copy=no
+
+    - name: Add nodejs PPA repo
+      apt_repository: repo='ppa:chris-lea/node.js' update_cache=yes
+
+    - name: Install nodejs package
+      apt: pkg=nodejs state=present
+
+    - name: Install supervisor package
+      apt: pkg=supervisor state=present
+
+    - name: Update ownership of ghost dir
+      file: path=/home/ghost owner=ghost recurse=yes state=directory
+
+    - name: Install node dependencies
+      npm: path=/home/ghost production=yes
+
+    - name: Configure ghost
+      template: src=config.js.j2 dest=/home/ghost/config.js
+
+    - name: Install ghost virtualhost
+      template: src=ghost.nginx.j2 dest=/etc/nginx/sites-available/ghost
+
+    - name: Disable default nginx virtualhost
+      file: path=/etc/nginx/sites-enabled/default state=absent
+
+    - name: Enable ghost virtualhost
+      file: src=/etc/nginx/sites-available/ghost path=/etc/nginx/sites-enabled/ghost state=link
+
+    - name: Configure supervisor
+      template: src=ghost.supervisor.j2 dest=/etc/supervisor/conf.d/ghost.conf
+
+    - name: Configure supervisor
+      command: supervisorctl update
+
+    - name: restart ghost
+      supervisorctl: name=ghost state=restarted
+
+    - name: restart nginx
+      service: name=nginx state=restarted
+
+    - name: restart supervisor
+      service: name=supervisor state=restarted 

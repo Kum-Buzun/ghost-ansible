@@ -1,0 +1,20 @@
+---
+- hosts: ghost
+  tasks:
+    - name: Installs nginx web server
+      apt: pkg=nginx state=installed
+      notify:
+        - start nginx
+
+    - name: Open port 22
+      ufw: rule=allow port=22
+
+    - name: Open port 80
+      ufw: rule=allow port=80
+
+    - name: Enable UFW
+      ufw: state=enabled
+
+  handlers:
+    - name: start nginx
+      service: name=nginx state=started

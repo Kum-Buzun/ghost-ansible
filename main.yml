@@ -1,0 +1,26 @@
+---
+- hosts: ghost
+  tasks:
+
+    - name: Update apt
+      apt: update_cache=true
+
+    - name: Install common tools
+      apt: pkg={{ item }} state=installed
+      with_items:
+        - vim
+        - git
+        - build-essential
+        - unzip
+        - make
+        - curl
+
+    - name: Add ghost user
+      user: name=ghost password=cowboys1 shell=/bin/bash
+
+    - name: Add authorized key 
+      authorized_key: user=ghost key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCpPhxYpjL4TrrZWGAgqA2I+c3upaYmuYXlclLjVBSyaw+wzSwe4Drcfaz/PaOmH8PuTeMK//N1/GBOZWN+6NR1xI/lhjICr9V+aJVa5MYA/FLdIC3M+hNMP1H3H2cRYavWQtKNA8fFkRsS6GcgM7+ZJrV6dU7vBtKtEgJIF385beX42q3P2D5tna2RJceCqCXAHLc6JnVzL6rYM94ZlpYlZLlCCWUbf/kboXl939CHFUSTRdWIHmm0KnFdRzHxKpb0+EynSYQ+9nd2I4xLVksoZE7X2XZPHtDQk/5l7hUtulJP9wvqfMirn1XRBeqasvn5rvUcmZjAyU2sfsEvdyoJ root@riptide"
+
+    - name: Add ghost to sudoers file
+      lineinfile: dest=/etc/sudoers regexp="ghost ALL" line="ghost ALL=(ALL) NOPASSWD:ALL" state=present
+
